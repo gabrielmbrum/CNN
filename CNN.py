@@ -5,24 +5,24 @@ import torch.optim as optim
 import torchvision
 from torchvision.datasets import CIFAR10
 from torchvision import transforms
-from torch.utils.data import DataLoader, random_split, Subset
+from torch.utils.data import DataLoader, Subset
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Agg')   # Salva figuras sem precisar de janela gráfica
+matplotlib.use('Agg')   # Saves figures without needing a GUI window
 import numpy as np
 
 # ─────────────────────────────────────────────
-# 0. DIRETÓRIO DE SAÍDA
+# 0. OUTPUT DIRECTORY
 # ─────────────────────────────────────────────
 os.makedirs("output", exist_ok=True)
 
 
 # ─────────────────────────────────────────────
-# 1. PREPARAÇÃO DOS DADOS
+# 1. DATA PREPARATION
 # ─────────────────────────────────────────────
-# Data Augmentation (utilizado APENAS no treino)
-# - RandomCrop: recorta aleatoriamente 32x32 com um padding de 4 pixels (evita perder bordas vitais)
-# - RandomHorizontalFlip: espelha a imagem aleatoriamente (50% de chance)
+# Data Augmentation (used ONLY during training)
+# - RandomCrop: randomly crops 32x32 with a 4-pixel padding to preserve edges
+# - RandomHorizontalFlip: randomly mirrors the image (50% probability)
 train_transform = transforms.Compose([
     transforms.RandomCrop(32, padding=4),
     transforms.RandomHorizontalFlip(),
@@ -30,104 +30,95 @@ train_transform = transforms.Compose([
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 
-# Transformação para teste e validação: apenas normalização, sem aumento de dados
+# Test and validation transformation: normalization only, no augmentation
 test_transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 
-# Carregamos o dataset de treino duas vezes, cada um com uma transformação diferente
+# Load the training dataset twice, each with a different transformation
 train_full_aug = CIFAR10(root='./data', train=True,  download=True, transform=train_transform)
 train_full_no_aug = CIFAR10(root='./data', train=True,  download=True, transform=test_transform)
 
-# Carregamos o teste normalmente
 test_data  = CIFAR10(root='./data', train=False, download=True, transform=test_transform)
 
-# Separamos 10% do treino como validação (para early stopping)
-num_train  = len(train_full_aug)           # 50000
-val_size   = int(0.10 * num_train)         # 5000 imagens
-train_size = num_train - val_size          # 45000 imagens
+# Separate 10% of training data for validation (for early stopping)
+num_train  = len(train_full_aug)           
+val_size   = int(0.10 * num_train)         
+train_size = num_train - val_size          
 
-# Geramos índices aleatórios para separar treino e validação
-# Fazemos isso manualmente em vez do random_split para podermos aplicar 
-# o train_transform no treino e o test_transform na validação
+# Manually generate random indices to split training and validation
+# This allows us to apply train_transform to the training set and test_transform to the validation set
 indices = torch.randperm(num_train).tolist()
 train_idx = indices[:train_size]
 val_idx   = indices[train_size:]
 
-# Criamos os Subsets puxando dos datasets instanciados corretamente
 train_data = Subset(train_full_aug, train_idx)
 val_data   = Subset(train_full_no_aug, val_idx)
 
-# DataLoaders: iteram sobre os dados em mini-batches
 train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
 val_loader   = DataLoader(val_data,   batch_size=64, shuffle=False)
 test_loader  = DataLoader(test_data,  batch_size=64, shuffle=False)
 
-print(f"Treino   : {len(train_data)} imagens (Com Data Augmentation)")
-print(f"Validação: {len(val_data)} imagens (Sem Data Augmentation)")
-print(f"Teste    : {len(test_data)} imagens (Sem Data Augmentation)")
+print(f"Train     : {len(train_data)} images (With Data Augmentation)")
+print(f"Validation: {len(val_data)} images (No Data Augmentation)")
+print(f"Test      : {len(test_data)} images (No Data Augmentation)")
 
-# Nomes das 10 classes do CIFAR-10
-CLASS_NAMES = ['avião', 'automóvel', 'pássaro', 'gato', 'cervo',
-               'cachorro', 'sapo', 'cavalo', 'navio', 'caminhão']
+CLASS_NAMES = ['airplane', 'automobile', 'bird', 'cat', 'deer',
+               'dog', 'frog', 'horse', 'ship', 'truck']
 
 
 # ─────────────────────────────────────────────
-# 2. CLASSE CNN FLEXÍVEL
+# 2. FLEXIBLE CNN CLASS
 # ─────────────────────────────────────────────
-# Por que usar uma classe flexível?
-#   Em vez de criar três arquiteturas completamente separadas, definimos
-#   uma única classe que recebe a configuração como parâmetro.
-#   Assim podemos instanciar diferentes topologias facilmente.
+# Why use a flexible class?
+#   Instead of creating three completely separate architectures, we define
+#   a single class that receives the configuration as a parameter.
+#   This makes it easy to instantiate different topologies.
 
 class CNN(nn.Module):
     """
-    Rede Convolucional Flexível para classificação de imagens.
+    Flexible Convolutional Network for image classification.
 
-    Parâmetros
+    Parameters
     ----------
-    conv_configs : lista de dicionários, cada um com:
-                   - 'filters' : número de filtros (canais de saída)
-                   - 'kernel'  : tamanho do filtro (ex: 3 → filtro 3x3)
-                   Cada entrada cria uma camada Conv → ReLU → MaxPool(2x2)
-    fc_sizes     : lista com o número de neurônios de cada camada FC oculta.
-                   A última camada de saída (10 classes) é adicionada automaticamente.
-    dropout_p    : probabilidade de dropout nas camadas FC (0 = sem dropout)
+    conv_configs : list of dictionaries, each with:
+                   - 'filters' : number of filters (output channels)
+                   - 'kernel'  : filter size (e.g., 3 -> 3x3 filter)
+                   Each entry creates a Conv -> ReLU -> MaxPool(2x2) layer
+    fc_sizes     : list with the number of neurons for each hidden FC layer.
+                   The final output layer (10 classes) is added automatically.
+    dropout_p    : dropout probability in FC layers (0 = no dropout)
     """
 
     def __init__(self, conv_configs, fc_sizes, dropout_p=0.0):
-        super(CNN, self).__init__()   # inicializa a classe pai nn.Module
+        super(CNN, self).__init__()   
 
-        # ── Bloco convolucional ──────────────────────────────────────────
-        # Construímos as camadas convolucionais dinamicamente.
+        # ── Convolutional Block ──────────────────────────────────────────
         conv_layers = []
-        in_channels = 3   # CIFAR-10: imagens RGB → 3 canais de entrada
+        in_channels = 3   # CIFAR-10: RGB images -> 3 input channels
 
         for cfg in conv_configs:
-            # Camada convolucional:
-            #   in_channels → cfg['filters'] mapas de características
-            #   padding=1 mantém o tamanho espacial (H e W) inalterado após a conv
+            # padding=1 keeps spatial size (H and W) unchanged after convolution
             conv_layers.append(
                 nn.Conv2d(in_channels, cfg['filters'],
                           kernel_size=cfg['kernel'], padding=cfg['kernel']//2)
             )
-            conv_layers.append(nn.ReLU())               # ativação não-linear
-            conv_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))  # reduz H e W pela metade
+            conv_layers.append(nn.ReLU())               
+            conv_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))  
 
-            in_channels = cfg['filters']   # próxima conv recebe os filtros desta como entrada
+            in_channels = cfg['filters']   
 
-        # nn.Sequential empacota a lista como uma única "caixa" sequencial
         self.conv_block = nn.Sequential(*conv_layers)
 
-        # ── Calcular o tamanho do vetor após todas as convs/poolings ────
-        # CIFAR-10: 32x32. Cada MaxPool(2x2) divide por 2.
-        # Com N camadas conv, o tamanho espacial final é 32 / 2^N.
+        # ── Calculate vector size after all conv/pool layers ─────────────
+        # CIFAR-10: 32x32. Each MaxPool(2x2) halves the spatial dimensions.
+        # With N conv layers, final spatial size is 32 / 2^N.
         n_pools    = len(conv_configs)
-        final_size = 32 // (2 ** n_pools)          # tamanho H (= W) após os pools
-        flat_size  = in_channels * final_size * final_size   # total de valores achatados
+        final_size = 32 // (2 ** n_pools)          
+        flat_size  = in_channels * final_size * final_size   
 
-        # ── Bloco Fully Connected (FC) ───────────────────────────────────
+        # ── Fully Connected (FC) Block ───────────────────────────────────
         fc_layers = []
         in_features = flat_size
 
@@ -138,39 +129,35 @@ class CNN(nn.Module):
                 fc_layers.append(nn.Dropout(p=dropout_p))
             in_features = out_features
 
-        # Camada de saída: 10 logits (um por classe)
         fc_layers.append(nn.Linear(in_features, 10))
 
         self.fc_block = nn.Sequential(*fc_layers)
 
     def forward(self, x):
-        """
-        Passagem para frente (forward pass).
-        x: tensor de forma (batch, 3, 32, 32)
-        """
-        x = self.conv_block(x)        # extrai características
-        x = x.view(x.size(0), -1)     # "achata" para (batch, flat_size)
-        x = self.fc_block(x)          # classificação
-        return x                       # retorna logits (CrossEntropyLoss aplica softmax internamente)
+        """Forward pass."""
+        x = self.conv_block(x)        
+        x = x.view(x.size(0), -1)     
+        x = self.fc_block(x)          
+        return x                      
 
 
 # ─────────────────────────────────────────────
-# 3. DEFINIÇÃO DAS 3 ARQUITETURAS
+# 3. ARCHITECTURE DEFINITIONS
 # ─────────────────────────────────────────────
-# Variamos:
-#   - Número de camadas convolucionais (2, 3 ou 4)
-#   - Número de filtros (32, 64, 128)
+# We vary:
+#   - Number of conv layers (2, 3, or 4)
+#   - Number of filters (32, 64, 128)
 #   - Dropout (0.0, 0.1, 0.3)
-# Isso permite comparar o impacto de cada escolha.
+# This allows us to compare the impact of each design choice.
 
 architectures = {
 
-    # Arquitetura 1: SIMPLES — 2 camadas conv, filtros menores, sem dropout
-    # Serve como baseline (referência) para comparar com as demais.
+    # Architecture 1: SIMPLE — 2 conv layers, smaller filters, no dropout
+    # Serves as a baseline to compare against the others.
     "CNN_A": {
         "conv_configs": [
-            {"filters": 32, "kernel": 3},   # conv1: 32 filtros 3x3
-            {"filters": 64, "kernel": 3},   # conv2: 64 filtros 3x3
+            {"filters": 32, "kernel": 3},   # conv1: 32 filters 3x3
+            {"filters": 64, "kernel": 3},   # conv2: 64 filters 3x3
         ],
         "fc_sizes"   : [256, 128],
         "dropout_p"  : 0.0,
@@ -178,21 +165,21 @@ architectures = {
         "lr"         : 1e-3,
     },
 
-    # Arquitetura 2: MÉDIA — 3 camadas conv, inspirada no exemplo do enunciado, dropout leve
+    # Architecture 2: MEDIUM — 3 conv layers, larger initial kernel, light dropout
     "CNN_B": {
         "conv_configs": [
-            {"filters": 64,  "kernel": 5},  # conv1: 64 filtros 5x5 (como no enunciado)
-            {"filters": 128, "kernel": 3},  # conv2: 128 filtros 3x3
-            {"filters": 128, "kernel": 3},  # conv3: 128 filtros 3x3
+            {"filters": 64,  "kernel": 5},  # conv1: 64 filters 5x5
+            {"filters": 128, "kernel": 3},  # conv2: 128 filters 3x3
+            {"filters": 128, "kernel": 3},  # conv3: 128 filters 3x3
         ],
-        "fc_sizes"   : [200, 200],          # FC1(200) → FC2(200) → FC3(10)
+        "fc_sizes"   : [200, 200],          # FC1(200) -> FC2(200) -> FC3(10)
         "dropout_p"  : 0.1,
         "optimizer"  : "adam",
         "lr"         : 1e-3,
     },
 
-    # Arquitetura 3: PROFUNDA — 4 camadas conv, filtros maiores, dropout mais alto
-    # Mais capacidade, mas maior risco de overfitting → testamos dropout=0.3
+    # Architecture 3: DEEP — 4 conv layers, larger filters, higher dropout
+    # More capacity, but higher risk of overfitting -> testing dropout=0.3
     "CNN_C": {
         "conv_configs": [
             {"filters": 32,  "kernel": 3},
@@ -203,21 +190,18 @@ architectures = {
         "fc_sizes"   : [256, 128],
         "dropout_p"  : 0.3,
         "optimizer"  : "sgd",
-        "lr"         : 1e-2,   # SGD geralmente precisa de lr maior que Adam
+        "lr"         : 1e-2,   # SGD generally requires a higher lr than Adam
     },
 }
 
 
 # ─────────────────────────────────────────────
-# 4. FUNÇÕES DE TREINAMENTO E AVALIAÇÃO
+# 4. TRAINING AND EVALUATION FUNCTIONS
 # ─────────────────────────────────────────────
 
 def train_one_epoch(model, loader, criterion, optimizer, device):
-    """
-    Treina o modelo por uma época completa.
-    Retorna a perda média e a acurácia da época.
-    """
-    model.train()   # modo treino: habilita dropout, batch norm etc.
+    """Trains the model for one full epoch. Returns avg loss and accuracy."""
+    model.train()   
     total_loss = 0.0
     correct    = 0
     total      = 0
@@ -225,14 +209,14 @@ def train_one_epoch(model, loader, criterion, optimizer, device):
     for images, labels in loader:
         images, labels = images.to(device), labels.to(device)
 
-        optimizer.zero_grad()          # limpa gradientes do passo anterior
-        outputs = model(images)        # forward pass
-        loss    = criterion(outputs, labels)   # calcula perda
-        loss.backward()                # backward: calcula gradientes
-        optimizer.step()               # atualiza pesos
+        optimizer.zero_grad()          
+        outputs = model(images)        
+        loss    = criterion(outputs, labels)   
+        loss.backward()                
+        optimizer.step()               
 
         total_loss += loss.item()
-        _, predicted = outputs.max(1)  # classe com maior logit
+        _, predicted = outputs.max(1)  
         correct += predicted.eq(labels).sum().item()
         total   += labels.size(0)
 
@@ -242,16 +226,13 @@ def train_one_epoch(model, loader, criterion, optimizer, device):
 
 
 def evaluate(model, loader, criterion, device):
-    """
-    Avalia o modelo (sem atualizar pesos).
-    Retorna perda média e acurácia.
-    """
-    model.eval()   # modo avaliação: desativa dropout
+    """Evaluates the model without updating weights. Returns avg loss and accuracy."""
+    model.eval()   
     total_loss = 0.0
     correct    = 0
     total      = 0
 
-    with torch.no_grad():   # desliga cálculo de gradientes (economiza memória)
+    with torch.no_grad():   
         for images, labels in loader:
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
@@ -270,35 +251,30 @@ def evaluate(model, loader, criterion, device):
 def train_model(name, config, train_loader, val_loader, device,
                 num_epochs=20, patience=5):
     """
-    Treina um modelo com early stopping baseado na perda de validação.
+    Trains a model using early stopping based on validation loss.
 
-    Parâmetros
+    Parameters
     ----------
-    patience : número de épocas sem melhora antes de parar o treino.
-               Isso evita overfitting e economiza tempo.
+    patience : number of epochs with no improvement before stopping the training.
     """
     print(f"\n{'='*55}")
-    print(f"  Treinando: {name}")
+    print(f"  Training: {name}")
     print(f"{'='*55}")
 
     model = CNN(config["conv_configs"], config["fc_sizes"], config["dropout_p"])
     model = model.to(device)
 
-    criterion = nn.CrossEntropyLoss()  # adequado para classificação multi-classe
+    criterion = nn.CrossEntropyLoss()  
 
-    # Escolhe otimizador conforme configuração
     if config["optimizer"] == "adam":
-        # Adam adapta o lr individualmente para cada peso → converge mais rápido
         optimizer = optim.Adam(model.parameters(), lr=config["lr"])
     else:
-        # SGD é mais simples e às vezes generaliza melhor com lr adequado
         optimizer = optim.SGD(model.parameters(), lr=config["lr"], momentum=0.9)
 
-    # Histórico para gerar gráficos depois
     history = {"train_loss": [], "val_loss": [],
                "train_acc":  [], "val_acc":  []}
 
-    # Early stopping: guardamos o melhor modelo e contamos épocas sem melhora
+    # Early stopping: saves the best model state and counts epochs without improvement
     best_val_loss  = float('inf')
     epochs_no_impr = 0
     best_state     = None
@@ -312,11 +288,10 @@ def train_model(name, config, train_loader, val_loader, device,
         history["train_acc"].append(t_acc)
         history["val_acc"].append(v_acc)
 
-        print(f"  Época {epoch:02d}/{num_epochs} | "
-              f"Treino: loss={t_loss:.4f} acc={t_acc:.1f}% | "
+        print(f"  Epoch {epoch:02d}/{num_epochs} | "
+              f"Train: loss={t_loss:.4f} acc={t_acc:.1f}% | "
               f"Val:   loss={v_loss:.4f} acc={v_acc:.1f}%")
 
-        # Verifica se houve melhora na validação
         if v_loss < best_val_loss:
             best_val_loss  = v_loss
             epochs_no_impr = 0
@@ -324,10 +299,10 @@ def train_model(name, config, train_loader, val_loader, device,
         else:
             epochs_no_impr += 1
             if epochs_no_impr >= patience:
-                print(f"  → Early stopping acionado na época {epoch}.")
+                print(f"  -> Early stopping triggered at epoch {epoch}.")
                 break
 
-    # Restaura os pesos do melhor modelo encontrado
+    # Restore weights of the best model found during training
     if best_state is not None:
         model.load_state_dict(best_state)
 
@@ -335,49 +310,46 @@ def train_model(name, config, train_loader, val_loader, device,
 
 
 # ─────────────────────────────────────────────
-# 5. PLOTS DE TREINAMENTO
+# 5. TRAINING PLOTS
 # ─────────────────────────────────────────────
 
 def plot_history(name, history):
-    """Plota curvas de perda e acurácia de treino/validação."""
+    """Plots training and validation loss/accuracy curves."""
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-    fig.suptitle(f"Histórico de Treinamento — {name}", fontsize=13)
+    fig.suptitle(f"Training History - {name}", fontsize=13)
 
     epochs = range(1, len(history["train_loss"]) + 1)
 
-    # Perda
-    axes[0].plot(epochs, history["train_loss"], label="Treino")
-    axes[0].plot(epochs, history["val_loss"],   label="Validação")
-    axes[0].set_title("Perda (Loss)")
-    axes[0].set_xlabel("Época")
+    axes[0].plot(epochs, history["train_loss"], label="Train")
+    axes[0].plot(epochs, history["val_loss"],   label="Validation")
+    axes[0].set_title("Loss")
+    axes[0].set_xlabel("Epoch")
     axes[0].set_ylabel("CrossEntropyLoss")
     axes[0].legend()
 
-    # Acurácia
-    axes[1].plot(epochs, history["train_acc"], label="Treino")
-    axes[1].plot(epochs, history["val_acc"],   label="Validação")
-    axes[1].set_title("Acurácia (%)")
-    axes[1].set_xlabel("Época")
-    axes[1].set_ylabel("Acurácia (%)")
+    axes[1].plot(epochs, history["train_acc"], label="Train")
+    axes[1].plot(epochs, history["val_acc"],   label="Validation")
+    axes[1].set_title("Accuracy (%)")
+    axes[1].set_xlabel("Epoch")
+    axes[1].set_ylabel("Accuracy (%)")
     axes[1].legend()
 
     plt.tight_layout()
-    plt.savefig(f"output/{name}_historico.png", dpi=100)
+    plt.savefig(f"output/{name}_history.png", dpi=100)
     plt.close()
-    print(f"  [Salvo] output/{name}_historico.png")
+    print(f"  [Saved] output/{name}_history.png")
 
 
 # ─────────────────────────────────────────────
-# 6. VISUALIZAÇÃO DE FILTROS
+# 6. FILTER VISUALIZATION
 # ─────────────────────────────────────────────
 
 def plot_filters(model, name):
     """
-    Visualiza os filtros da PRIMEIRA camada convolucional.
-    Cada filtro tem forma (3, K, K) → plotamos os 3 canais RGB juntos.
-    Para isso convertemos para escala de cinza fazendo a média dos canais.
+    Visualizes the filters of the FIRST convolutional layer.
+    Averages the 3 RGB channels to convert to grayscale for easier visualization.
     """
-    # Pega os pesos da primeira Conv2d do bloco convolucional
+    # Retrieves weights from the first Conv2d layer
     first_conv = None
     for layer in model.conv_block:
         if isinstance(layer, nn.Conv2d):
@@ -387,59 +359,57 @@ def plot_filters(model, name):
     if first_conv is None:
         return
 
-    # weights shape: (num_filters, 3, K, K)
     weights = first_conv.weight.data.cpu()
 
-    num_filters = min(16, weights.shape[0])   # mostra no máximo 16 filtros
+    num_filters = min(16, weights.shape[0])   
     cols = 8
     rows = (num_filters + cols - 1) // cols
 
     fig, axes = plt.subplots(rows, cols, figsize=(cols * 1.5, rows * 1.5))
-    fig.suptitle(f"Filtros da 1ª Camada Conv — {name}", fontsize=12)
+    fig.suptitle(f"1st Conv Layer Filters - {name}", fontsize=12)
 
     for i in range(rows * cols):
         ax = axes[i // cols][i % cols] if rows > 1 else axes[i % cols]
         ax.axis('off')
         if i < num_filters:
-            # Média dos 3 canais → escala de cinza
+            # Average of 3 channels -> Grayscale
             filt = weights[i].mean(dim=0).numpy()
-            # Normaliza para [0, 1] para facilitar a visualização
+            # Normalize to [0, 1] for visualization
             filt = (filt - filt.min()) / (filt.max() - filt.min() + 1e-8)
             ax.imshow(filt, cmap='viridis')
 
     plt.tight_layout()
-    plt.savefig(f"output/{name}_filtros.png", dpi=100)
+    plt.savefig(f"output/{name}_filters.png", dpi=100)
     plt.close()
-    print(f"  [Salvo] output/{name}_filtros.png")
+    print(f"  [Saved] output/{name}_filters.png")
 
 
 # ─────────────────────────────────────────────
-# 7. VISUALIZAÇÃO DE MAPAS DE ATIVAÇÃO
+# 7. ACTIVATION MAP VISUALIZATION
 # ─────────────────────────────────────────────
 
 def plot_activation_maps(model, loader, name, device):
     """
-    Passa uma imagem pelo bloco convolucional e mostra os mapas de ativação
-    (feature maps) da ÚLTIMA camada convolucional.
+    Passes an image through the conv block and displays activation maps
+    from the LAST convolutional layer.
     """
     model.eval()
 
-    # Pega um batch e usa apenas a primeira imagem
     images, labels = next(iter(loader))
-    img = images[0:1].to(device)   # shape: (1, 3, 32, 32)
+    img = images[0:1].to(device)   
 
-    # Passamos a imagem somente pelo bloco convolucional
+    # Pass the image exclusively through the convolutional block
     with torch.no_grad():
-        feat_maps = model.conv_block(img)   # shape: (1, C, H, W)
+        feat_maps = model.conv_block(img)   
 
-    feat_maps = feat_maps.squeeze(0).cpu()  # → (C, H, W)
+    feat_maps = feat_maps.squeeze(0).cpu()  
 
     num_maps = min(16, feat_maps.shape[0])
     cols = 8
     rows = (num_maps + cols - 1) // cols
 
     fig, axes = plt.subplots(rows, cols, figsize=(cols * 1.5, rows * 1.5))
-    fig.suptitle(f"Mapas de Ativação (última conv) — {name}", fontsize=12)
+    fig.suptitle(f"Activation Maps (last conv) - {name}", fontsize=12)
 
     for i in range(rows * cols):
         ax = axes[i // cols][i % cols] if rows > 1 else axes[i % cols]
@@ -450,19 +420,19 @@ def plot_activation_maps(model, loader, name, device):
             ax.imshow(fmap, cmap='inferno')
 
     plt.tight_layout()
-    plt.savefig(f"output/{name}_mapas_ativacao.png", dpi=100)
+    plt.savefig(f"output/{name}_activation_maps.png", dpi=100)
     plt.close()
-    print(f"  [Salvo] output/{name}_mapas_ativacao.png")
+    print(f"  [Saved] output/{name}_activation_maps.png")
 
 
 # ─────────────────────────────────────────────
-# 8. IMAGENS COM CLASSES PREDITAS
+# 8. PREDICTED CLASS IMAGES
 # ─────────────────────────────────────────────
 
 def plot_predictions(model, loader, name, device, n=16):
     """
-    Mostra n imagens do test_loader com a classe predita e a real.
-    Verde = acerto, Vermelho = erro.
+    Displays n images from test_loader with their predicted and true classes.
+    Green = correct, Red = incorrect.
     """
     model.eval()
     images, labels = next(iter(loader))
@@ -479,43 +449,43 @@ def plot_predictions(model, loader, name, device, n=16):
     cols = 8
     rows = (n + cols - 1) // cols
     fig, axes = plt.subplots(rows, cols, figsize=(cols * 2, rows * 2.5))
-    fig.suptitle(f"Predições no Teste — {name}", fontsize=12)
+    fig.suptitle(f"Test Predictions - {name}", fontsize=12)
 
     for i in range(rows * cols):
         ax = axes[i // cols][i % cols] if rows > 1 else axes[i % cols]
         ax.axis('off')
         if i < n:
-            # Desfaz a normalização para exibir a imagem corretamente
-            img = images[i].numpy().transpose(1, 2, 0)  # (C,H,W) → (H,W,C)
-            img = img * 0.5 + 0.5                        # [-1,1] → [0,1]
+            # Revert normalization to display the image correctly
+            img = images[i].numpy().transpose(1, 2, 0)  
+            img = img * 0.5 + 0.5                        
             img = np.clip(img, 0, 1)
             ax.imshow(img)
 
             correct = (preds[i] == labels[i])
             color   = 'green' if correct else 'red'
-            ax.set_title(f"P:{CLASS_NAMES[preds[i]]}\nR:{CLASS_NAMES[labels[i]]}",
+            ax.set_title(f"P:{CLASS_NAMES[preds[i]]}\nT:{CLASS_NAMES[labels[i]]}",
                          fontsize=7, color=color)
 
     plt.tight_layout()
-    plt.savefig(f"output/{name}_predicoes.png", dpi=100)
+    plt.savefig(f"output/{name}_predictions.png", dpi=100)
     plt.close()
-    print(f"  [Salvo] output/{name}_predicoes.png")
+    print(f"  [Saved] output/{name}_predictions.png")
 
 
 # ─────────────────────────────────────────────
-# 9. COMPARAÇÃO FINAL
+# 9. FINAL COMPARISON
 # ─────────────────────────────────────────────
 
 def plot_comparison(results):
-    """Gráfico de barras com a acurácia no teste de cada arquitetura."""
+    """Bar chart comparing test accuracy across architectures."""
     names = list(results.keys())
     accs  = [results[n] for n in names]
 
     fig, ax = plt.subplots(figsize=(7, 4))
     bars = ax.bar(names, accs, color=['steelblue', 'darkorange', 'seagreen'])
     ax.set_ylim(0, 100)
-    ax.set_ylabel("Acurácia no Teste (%)")
-    ax.set_title("Comparação de Arquiteturas CNN — CIFAR-10")
+    ax.set_ylabel("Test Accuracy (%)")
+    ax.set_title("CNN Architectures Comparison - CIFAR-10")
 
     for bar, acc in zip(bars, accs):
         ax.text(bar.get_x() + bar.get_width() / 2,
@@ -523,57 +493,51 @@ def plot_comparison(results):
                 f"{acc:.1f}%", ha='center', fontsize=11, fontweight='bold')
 
     plt.tight_layout()
-    plt.savefig("output/comparacao_arquiteturas.png", dpi=100)
+    plt.savefig("output/architectures_comparison.png", dpi=100)
     plt.close()
-    print("\n[Salvo] output/comparacao_arquiteturas.png")
+    print("\n[Saved] output/architectures_comparison.png")
 
 
 # ─────────────────────────────────────────────
-# 10. LOOP PRINCIPAL
+# 10. MAIN LOOP
 # ─────────────────────────────────────────────
 
 def main():
-    # Detecta se há GPU disponível; senão usa CPU
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"\nDispositivo: {device}")
+    print(f"\nDevice: {device}")
 
-    results = {}   # guarda acurácia no teste de cada arquitetura
-    log_lines = [] # log de texto para salvar em arquivo
+    results = {}   
+    log_lines = [] 
 
     for name, config in architectures.items():
 
-        # Treina
         model, history = train_model(
             name, config, train_loader, val_loader, device,
             num_epochs=50, patience=5
         )
 
-        # Avalia no teste
         criterion = nn.CrossEntropyLoss()
         test_loss, test_acc = evaluate(model, test_loader, criterion, device)
         results[name] = test_acc
-        print(f"\n  → Acurácia no TESTE ({name}): {test_acc:.2f}%\n")
+        print(f"\n  -> TEST Accuracy ({name}): {test_acc:.2f}%\n")
 
-        log_lines.append(f"{name}: teste_acc={test_acc:.2f}%, teste_loss={test_loss:.4f}")
+        log_lines.append(f"{name}: test_acc={test_acc:.2f}%, test_loss={test_loss:.4f}")
 
-        # Gera plots
         plot_history(model_name := name, history)
         plot_filters(model, name)
         plot_activation_maps(model, test_loader, name, device)
         plot_predictions(model, test_loader, name, device)
 
-    # Gráfico comparativo
     plot_comparison(results)
 
-    # Salva log em texto
-    with open("output/resultados.txt", "w") as f:
-        f.write("Resultados finais — CIFAR-10\n")
+    with open("output/results.txt", "w") as f:
+        f.write("Final Results - CIFAR-10\n")
         f.write("=" * 40 + "\n")
         for line in log_lines:
             f.write(line + "\n")
 
-    print("\n[Salvo] output/resultados.txt")
-    print("\nTudo concluído! Verifique a pasta output/")
+    print("\n[Saved] output/results.txt")
+    print("\nAll done! Check the output/ folder.")
 
 
 if __name__ == "__main__":
