@@ -1,0 +1,156 @@
+Files already downloaded and verified
+Files already downloaded and verified
+Files already downloaded and verified
+Treino   : 45000 imagens (Com Data Augmentation)
+Validação: 5000 imagens (Sem Data Augmentation)
+Teste    : 10000 imagens (Sem Data Augmentation)
+
+Dispositivo: cuda
+
+=======================================================
+  Treinando: CNN_A
+=======================================================
+  Época 01/50 | Treino: loss=1.5926 acc=41.0% | Val:   loss=1.2910 acc=52.0%
+  Época 02/50 | Treino: loss=1.2379 acc=54.8% | Val:   loss=1.0743 acc=61.4%
+  Época 03/50 | Treino: loss=1.0892 acc=60.8% | Val:   loss=0.9854 acc=64.5%
+  Época 04/50 | Treino: loss=0.9912 acc=64.7% | Val:   loss=0.8974 acc=67.7%
+  Época 05/50 | Treino: loss=0.9272 acc=67.1% | Val:   loss=0.8818 acc=68.6%
+  Época 06/50 | Treino: loss=0.8819 acc=68.9% | Val:   loss=0.8254 acc=70.4%
+  Época 07/50 | Treino: loss=0.8416 acc=70.2% | Val:   loss=0.8161 acc=70.8%
+  Época 08/50 | Treino: loss=0.8154 acc=71.2% | Val:   loss=0.8283 acc=70.7%
+  Época 09/50 | Treino: loss=0.7828 acc=72.3% | Val:   loss=0.7664 acc=72.6%
+  Época 10/50 | Treino: loss=0.7659 acc=73.0% | Val:   loss=0.7476 acc=73.5%
+  Época 11/50 | Treino: loss=0.7453 acc=73.9% | Val:   loss=0.7266 acc=74.6%
+  Época 12/50 | Treino: loss=0.7271 acc=74.5% | Val:   loss=0.7267 acc=74.2%
+  Época 13/50 | Treino: loss=0.7083 acc=75.1% | Val:   loss=0.7396 acc=74.2%
+  Época 14/50 | Treino: loss=0.6954 acc=75.3% | Val:   loss=0.7035 acc=74.9%
+  Época 15/50 | Treino: loss=0.6757 acc=76.5% | Val:   loss=0.7070 acc=75.2%
+  Época 16/50 | Treino: loss=0.6578 acc=77.2% | Val:   loss=0.6970 acc=75.8%
+  Época 17/50 | Treino: loss=0.6493 acc=77.1% | Val:   loss=0.6956 acc=75.2%
+  Época 18/50 | Treino: loss=0.6425 acc=77.4% | Val:   loss=0.7172 acc=74.5%
+  Época 19/50 | Treino: loss=0.6244 acc=77.8% | Val:   loss=0.6768 acc=76.0%
+  Época 20/50 | Treino: loss=0.6122 acc=78.5% | Val:   loss=0.6454 acc=77.3%
+  Época 21/50 | Treino: loss=0.6081 acc=78.6% | Val:   loss=0.6747 acc=76.8%
+  Época 22/50 | Treino: loss=0.5929 acc=79.1% | Val:   loss=0.6682 acc=76.9%
+  Época 23/50 | Treino: loss=0.5938 acc=79.1% | Val:   loss=0.6554 acc=77.2%
+  Época 24/50 | Treino: loss=0.5799 acc=79.6% | Val:   loss=0.6606 acc=76.9%
+  Época 25/50 | Treino: loss=0.5746 acc=79.7% | Val:   loss=0.6919 acc=76.6%
+  → Early stopping acionado na época 25.
+
+  → Acurácia no TESTE (CNN_A): 77.38%
+
+  [Salvo] output/CNN_A_historico.png
+  [Salvo] output/CNN_A_filtros.png
+  [Salvo] output/CNN_A_mapas_ativacao.png
+  [Salvo] output/CNN_A_predicoes.png
+
+=======================================================
+  Treinando: CNN_B
+=======================================================
+  Época 01/50 | Treino: loss=1.6540 acc=38.1% | Val:   loss=1.3384 acc=50.7%
+  Época 02/50 | Treino: loss=1.2811 acc=53.4% | Val:   loss=1.1430 acc=58.0%
+  Época 03/50 | Treino: loss=1.0859 acc=61.2% | Val:   loss=0.9222 acc=67.1%
+  Época 04/50 | Treino: loss=0.9624 acc=65.9% | Val:   loss=0.8661 acc=69.5%
+  Época 05/50 | Treino: loss=0.8756 acc=69.2% | Val:   loss=0.7920 acc=72.6%
+  Época 06/50 | Treino: loss=0.8249 acc=71.1% | Val:   loss=0.7839 acc=71.6%
+  Época 07/50 | Treino: loss=0.7728 acc=73.0% | Val:   loss=0.7636 acc=74.0%
+  Época 08/50 | Treino: loss=0.7403 acc=74.3% | Val:   loss=0.7234 acc=75.0%
+  Época 09/50 | Treino: loss=0.7178 acc=75.0% | Val:   loss=0.6894 acc=76.5%
+  Época 10/50 | Treino: loss=0.6876 acc=76.1% | Val:   loss=0.6775 acc=76.5%
+  Época 11/50 | Treino: loss=0.6651 acc=76.9% | Val:   loss=0.6538 acc=77.6%
+  Época 12/50 | Treino: loss=0.6486 acc=77.5% | Val:   loss=0.6505 acc=77.4%
+  Época 13/50 | Treino: loss=0.6358 acc=77.8% | Val:   loss=0.6120 acc=79.1%
+  Época 14/50 | Treino: loss=0.6216 acc=78.2% | Val:   loss=0.6389 acc=78.1%
+  Época 15/50 | Treino: loss=0.6077 acc=79.0% | Val:   loss=0.6194 acc=78.5%
+  Época 16/50 | Treino: loss=0.5925 acc=79.4% | Val:   loss=0.5914 acc=79.5%
+  Época 17/50 | Treino: loss=0.5789 acc=79.9% | Val:   loss=0.5907 acc=79.4%
+  Época 18/50 | Treino: loss=0.5730 acc=80.2% | Val:   loss=0.5997 acc=80.1%
+  Época 19/50 | Treino: loss=0.5640 acc=80.5% | Val:   loss=0.6009 acc=79.3%
+  Época 20/50 | Treino: loss=0.5571 acc=80.6% | Val:   loss=0.5852 acc=79.4%
+  Época 21/50 | Treino: loss=0.5456 acc=81.0% | Val:   loss=0.5967 acc=79.4%
+  Época 22/50 | Treino: loss=0.5411 acc=81.3% | Val:   loss=0.5922 acc=80.0%
+  Época 23/50 | Treino: loss=0.5335 acc=81.6% | Val:   loss=0.5982 acc=79.5%
+  Época 24/50 | Treino: loss=0.5218 acc=81.9% | Val:   loss=0.5915 acc=79.5%
+  Época 25/50 | Treino: loss=0.5127 acc=82.1% | Val:   loss=0.5813 acc=80.3%
+  Época 26/50 | Treino: loss=0.5093 acc=82.2% | Val:   loss=0.5743 acc=80.6%
+  Época 27/50 | Treino: loss=0.5076 acc=82.5% | Val:   loss=0.5657 acc=80.4%
+  Época 28/50 | Treino: loss=0.4990 acc=82.5% | Val:   loss=0.5744 acc=80.8%
+  Época 29/50 | Treino: loss=0.4889 acc=83.1% | Val:   loss=0.5741 acc=81.0%
+  Época 30/50 | Treino: loss=0.4861 acc=83.2% | Val:   loss=0.5654 acc=81.3%
+  Época 31/50 | Treino: loss=0.4777 acc=83.4% | Val:   loss=0.5733 acc=81.2%
+  Época 32/50 | Treino: loss=0.4860 acc=83.1% | Val:   loss=0.5732 acc=80.8%
+  Época 33/50 | Treino: loss=0.4751 acc=83.5% | Val:   loss=0.5801 acc=81.0%
+  Época 34/50 | Treino: loss=0.4634 acc=83.8% | Val:   loss=0.5626 acc=81.4%
+  Época 35/50 | Treino: loss=0.4656 acc=83.8% | Val:   loss=0.5717 acc=80.7%
+  Época 36/50 | Treino: loss=0.4561 acc=84.1% | Val:   loss=0.5884 acc=81.0%
+  Época 37/50 | Treino: loss=0.4569 acc=84.3% | Val:   loss=0.5716 acc=81.4%
+  Época 38/50 | Treino: loss=0.4517 acc=84.3% | Val:   loss=0.5354 acc=81.9%
+  Época 39/50 | Treino: loss=0.4423 acc=84.5% | Val:   loss=0.5892 acc=80.1%
+  Época 40/50 | Treino: loss=0.4456 acc=84.6% | Val:   loss=0.5539 acc=80.9%
+  Época 41/50 | Treino: loss=0.4426 acc=84.6% | Val:   loss=0.5640 acc=81.4%
+  Época 42/50 | Treino: loss=0.4355 acc=84.9% | Val:   loss=0.5295 acc=82.5%
+  Época 43/50 | Treino: loss=0.4353 acc=85.2% | Val:   loss=0.5540 acc=81.6%
+  Época 44/50 | Treino: loss=0.4284 acc=85.1% | Val:   loss=0.5429 acc=82.1%
+  Época 45/50 | Treino: loss=0.4304 acc=85.1% | Val:   loss=0.5324 acc=82.6%
+  Época 46/50 | Treino: loss=0.4212 acc=85.3% | Val:   loss=0.5321 acc=83.1%
+  Época 47/50 | Treino: loss=0.4234 acc=85.2% | Val:   loss=0.5504 acc=82.3%
+  → Early stopping acionado na época 47.
+
+  → Acurácia no TESTE (CNN_B): 83.00%
+
+  [Salvo] output/CNN_B_historico.png
+  [Salvo] output/CNN_B_filtros.png
+  [Salvo] output/CNN_B_mapas_ativacao.png
+  [Salvo] output/CNN_B_predicoes.png
+
+=======================================================
+  Treinando: CNN_C
+=======================================================
+  Época 01/50 | Treino: loss=2.1739 acc=16.5% | Val:   loss=1.8477 acc=27.5%
+  Época 02/50 | Treino: loss=1.7734 acc=31.9% | Val:   loss=1.6919 acc=37.0%
+  Época 03/50 | Treino: loss=1.5294 acc=43.2% | Val:   loss=1.2996 acc=52.3%
+  Época 04/50 | Treino: loss=1.3116 acc=52.0% | Val:   loss=1.1725 acc=55.8%
+  Época 05/50 | Treino: loss=1.1507 acc=58.7% | Val:   loss=1.0325 acc=62.2%
+  Época 06/50 | Treino: loss=1.0466 acc=63.0% | Val:   loss=0.9184 acc=66.8%
+  Época 07/50 | Treino: loss=0.9525 acc=66.6% | Val:   loss=0.8429 acc=70.5%
+  Época 08/50 | Treino: loss=0.8899 acc=69.0% | Val:   loss=0.8131 acc=71.2%
+  Época 09/50 | Treino: loss=0.8338 acc=70.9% | Val:   loss=0.7504 acc=73.9%
+  Época 10/50 | Treino: loss=0.7839 acc=72.8% | Val:   loss=0.7337 acc=73.9%
+  Época 11/50 | Treino: loss=0.7481 acc=74.1% | Val:   loss=0.7074 acc=76.0%
+  Época 12/50 | Treino: loss=0.7180 acc=75.4% | Val:   loss=0.7403 acc=74.9%
+  Época 13/50 | Treino: loss=0.6867 acc=76.6% | Val:   loss=0.6474 acc=77.8%
+  Época 14/50 | Treino: loss=0.6705 acc=77.1% | Val:   loss=0.6482 acc=77.5%
+  Época 15/50 | Treino: loss=0.6427 acc=78.0% | Val:   loss=0.6483 acc=78.3%
+  Época 16/50 | Treino: loss=0.6231 acc=78.8% | Val:   loss=0.6092 acc=79.6%
+  Época 17/50 | Treino: loss=0.6029 acc=79.4% | Val:   loss=0.6019 acc=79.9%
+  Época 18/50 | Treino: loss=0.5919 acc=79.9% | Val:   loss=0.5895 acc=79.5%
+  Época 19/50 | Treino: loss=0.5706 acc=80.6% | Val:   loss=0.5793 acc=80.7%
+  Época 20/50 | Treino: loss=0.5598 acc=81.0% | Val:   loss=0.5507 acc=81.6%
+  Época 21/50 | Treino: loss=0.5426 acc=81.4% | Val:   loss=0.5942 acc=80.1%
+  Época 22/50 | Treino: loss=0.5335 acc=81.9% | Val:   loss=0.5720 acc=80.8%
+  Época 23/50 | Treino: loss=0.5200 acc=82.4% | Val:   loss=0.6026 acc=79.6%
+  Época 24/50 | Treino: loss=0.5185 acc=82.5% | Val:   loss=0.5429 acc=81.8%
+  Época 25/50 | Treino: loss=0.5049 acc=83.0% | Val:   loss=0.5630 acc=80.8%
+  Época 26/50 | Treino: loss=0.4987 acc=83.1% | Val:   loss=0.5510 acc=81.5%
+  Época 27/50 | Treino: loss=0.4867 acc=83.5% | Val:   loss=0.5479 acc=81.3%
+  Época 28/50 | Treino: loss=0.4741 acc=83.8% | Val:   loss=0.5492 acc=81.8%
+  Época 29/50 | Treino: loss=0.4706 acc=83.8% | Val:   loss=0.5177 acc=82.4%
+  Época 30/50 | Treino: loss=0.4662 acc=84.0% | Val:   loss=0.5248 acc=82.1%
+  Época 31/50 | Treino: loss=0.4584 acc=84.4% | Val:   loss=0.5495 acc=82.2%
+  Época 32/50 | Treino: loss=0.4474 acc=84.7% | Val:   loss=0.5329 acc=82.0%
+  Época 33/50 | Treino: loss=0.4432 acc=85.0% | Val:   loss=0.5430 acc=81.8%
+  Época 34/50 | Treino: loss=0.4356 acc=85.0% | Val:   loss=0.5321 acc=82.1%
+  → Early stopping acionado na época 34.
+
+  → Acurácia no TESTE (CNN_C): 82.23%
+
+  [Salvo] output/CNN_C_historico.png
+  [Salvo] output/CNN_C_filtros.png
+  [Salvo] output/CNN_C_mapas_ativacao.png
+  [Salvo] output/CNN_C_predicoes.png
+
+[Salvo] output/comparacao_arquiteturas.png
+
+[Salvo] output/resultados.txt
+
+Tudo concluído! Verifique a pasta output/

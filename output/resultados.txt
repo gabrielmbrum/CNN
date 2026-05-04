@@ -1,0 +1,5 @@
+Resultados finais — CIFAR-10
+========================================
+CNN_A: teste_acc=77.38%, teste_loss=0.6697
+CNN_B: teste_acc=83.00%, teste_loss=0.5330
+CNN_C: teste_acc=82.23%, teste_loss=0.5247
