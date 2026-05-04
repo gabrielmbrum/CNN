@@ -16,6 +16,8 @@ here i tested 3 different archs, a small, a medium and a big one. but you can ju
 
 with some fine-tuning, changing some hyperparemters, regularizators, i reached 83% of accuracy with the medium architecture.
 
+for more details, i wrote the `report.pdf`, using LaTeX, and you can read it to understand my choices and results obtained.
+
 ## plots
 
 in the directory `output` there are some plost of feature maps, filters (kernels), history of acc and loss during epochs and some example of predictions done by the final model of each architecture.
