@@ -60,14 +60,14 @@
 \section{Introdução}
 % ===========================================================================
 
-Esta seção expõe as topologias escolhidas, os hiperparâmetros selecionados e suas respectivas justificativas.
+Esta seção expõe as topologias escolhidas, os hiperparâmetros selecionados e suas respectivas justificativas. Inicialmente, não havia utilizado técnicas de aumento de dados, assim estava ocorrendo um \textit{overfitting} severo, então para evitar do estudo de caso ser direcionado ao sobreajuste, realizei um aumento de dados simples (\textit{Random Crop} e \textit{Random Horizontal Flip}) \textbf{apenas} no conjunto de treino . O código foi desenvolvido em Python, executado no servidor do grupo de pesquisa LIPAI, e está disponível no \textit{github} [\url{https://github.com/gabrielmbrum/CNN}].
+ 
 
-O código foi desenvolvido em Python, executado no servidor do grupo de pesquisa LIPAI, e está disponível no \textit{github} [\url{https://github.com/gabrielmbrum/CNN}].
 
 
 \subsection{CNN-A: A menor arquitetura}
 
-\begin{lstlisting}[style=python, caption={Arquitetura A (CNN simples).}]
+\begin{lstlisting}[style=python, caption={Arquitetura A (CNN simples).}, label={lst:cnn_a}]
 "CNN_A": {
         "conv_configs": [
             {"filters": 32, "kernel": 3},   # conv1: 32 filtros 3x3
@@ -80,9 +80,9 @@ O código foi desenvolvido em Python, executado no servidor do grupo de pesquisa
     }
 \end{lstlisting}
 
-Esta arquitetura visa ser a \textit{baseline}, onde não realizamos regularização, assim espera-se que haja \textit{overfitting} e que a acurácia de validação seja inferior às demais arquiteturas.
-Em \textit{Listing 1}, está o código da arquitetura CNN-A, que consiste em duas camadas convolucionais seguidas por duas camadas totalmente conectadas (fully connected). As camadas convolucionais utilizam filtros de 3x3, com 32 e 64 filtros respectivamente, e são seguidas por camadas de pooling para reduzir a dimensionalidade. As camadas totalmente conectadas possuem 256 e 128 neurônios, respectivamente, e não utilizam dropout para regularização. O otimizador escolhido é o Adam, com uma taxa de aprendizado de 0.001.
-Para melhor visualização, o esquema presente na Figura 1 mostra o fluxo entre as camadas.
+Esta arquitetura visa ser a \textit{baseline}, onde não realizamos regularização, assim seria natural ocorrer \textit{overfitting} e que a acurácia de validação seja inferior às demais arquiteturas.
+Em \textit{Listing} \ref{lst:cnn_a}, está o código da arquitetura CNN-A, que consiste em duas camadas convolucionais seguidas por duas camadas totalmente conectadas (fully connected). As camadas convolucionais utilizam filtros de 3x3, com 32 e 64 filtros respectivamente, e são seguidas por camadas de pooling para reduzir a dimensionalidade. As camadas totalmente conectadas possuem 256 e 128 neurônios, respectivamente, e não utilizam dropout para regularização. O otimizador escolhido é o Adam, com uma taxa de aprendizado de 0.001.
+Para melhor visualização, o esquema presente na Figura \ref{fig:cnn_a} mostra o fluxo entre as camadas.
 
 \begin{figure}[htpb]
     \centering
@@ -134,7 +134,7 @@ Para melhor visualização, o esquema presente na Figura 1 mostra o fluxo entre 
 
 \subsection{CNN-B: A arquitetura média}
 
-\begin{lstlisting}[style=python, caption={Arquitetura B (CNN média).}]
+\begin{lstlisting}[style=python, caption={Arquitetura B (CNN média).}, label={lst:cnn_b}]
 "CNN_B": {
         "conv_configs": [
             {"filters": 64,  "kernel": 5},  # conv1: 64 filtros 5x5
@@ -148,8 +148,8 @@ Para melhor visualização, o esquema presente na Figura 1 mostra o fluxo entre 
     }
 \end{lstlisting}
 
-A arquitetura CNN-B é uma versão intermediária, com mais camadas e regularização leve. Como exposto em \textit{Listing 2} ela possui três camadas convolucionais, com 64 filtros de 5x5 na primeira camada e 128 filtros de 3x3 nas duas camadas seguintes. As camadas totalmente conectadas têm 200 neurônios cada, e um dropout de 0.1 é aplicado para reduzir o risco de overfitting. O otimizador e a taxa de aprendizado são os mesmos da CNN-A.
-A Figura 2 ilustra a estrutura da CNN-B, destacando as diferenças em relação à CNN-A, como o aumento no número de camadas e a introdução do dropout.
+A arquitetura CNN-B é uma versão intermediária, com mais camadas e regularização leve. Como exposto em \textit{Listing} \ref{lst:cnn_b} ela possui três camadas convolucionais, com 64 filtros de 5x5 na primeira camada e 128 filtros de 3x3 nas duas camadas seguintes. As camadas totalmente conectadas têm 200 neurônios cada, e um dropout de 0.1 é aplicado para reduzir o risco de overfitting. O otimizador e a taxa de aprendizado são os mesmos da CNN-A.
+A Figura \ref{fig:cnn_b} ilustra a estrutura da CNN-B, destacando as diferenças em relação à CNN-A, como o aumento no número de camadas e a introdução do dropout.
 
 \begin{figure}[htpb]
     \centering
@@ -197,7 +197,7 @@ A Figura 2 ilustra a estrutura da CNN-B, destacando as diferenças em relação 
 
 \subsection{CNN-C: A arquitetura grande}
 
-\begin{lstlisting}[style=python, caption={Arquitetura C (CNN grande).}]
+\begin{lstlisting}[style=python, caption={Arquitetura C (CNN grande).}, label={lst:cnn_c}]
 "CNN_C": {
         "conv_configs": [
             {"filters": 32,  "kernel": 3},
@@ -212,8 +212,8 @@ A Figura 2 ilustra a estrutura da CNN-B, destacando as diferenças em relação 
     }
 \end{lstlisting}
 
-Aqui a arquitetura é mais robusta, com quatro camadas convolucionais e uma regularização mais forte. Conforme mostrado em \textit{Listing 3}, as camadas convolucionais têm 32, 64, 128 e 128 filtros de 3x3, respectivamente. As camadas totalmente conectadas possuem 256 e 128 neurônios, com um dropout de 0.3 para combater o overfitting. O otimizador escolhido é o SGD, que geralmente requer uma taxa de aprendizado maior (1e-2) em comparação ao Adam.
-A Figura 3 apresenta a estrutura da CNN-C, evidenciando o aumento no número de camadas e a mudança no otimizador, que pode impactar significativamente o processo de treinamento e a convergência do modelo.
+Aqui a arquitetura é mais robusta, com quatro camadas convolucionais e uma regularização mais forte. Conforme mostrado em \textit{Listing} \ref{lst:cnn_c}, as camadas convolucionais têm 32, 64, 128 e 128 filtros de 3x3, respectivamente. As camadas totalmente conectadas possuem 256 e 128 neurônios, com um dropout de 0.3 para combater o overfitting. O otimizador escolhido é o SGD, que geralmente requer uma taxa de aprendizado maior (1e-2) em comparação ao Adam.
+A Figura \ref{fig:cnn_c} apresenta a estrutura da CNN-C, evidenciando o aumento no número de camadas e a mudança no otimizador, que pode impactar significativamente o processo de treinamento e a convergência do modelo.
 
 \begin{figure}[htpb]
     \centering
@@ -272,7 +272,7 @@ A arquitetura CNN-A atingiu uma acurácia de teste de 77.38\%. O critério de pa
 
 \begin{figure}[htpb]
     \centering
-    \includegraphics[width=0.9\textwidth]{output/CNN_A_historico.png}
+    \includegraphics[width=1\textwidth]{output/CNN_A_historico.png}
     \caption{Histórico de \textit{Loss} e Acurácia para a CNN-A.}
     \label{fig:cnn_a_hist}
 \end{figure}
@@ -308,7 +308,7 @@ A CNN-B apresentou o melhor desempenho da bateria de testes, alcançando uma acu
 
 \begin{figure}[htpb]
     \centering
-    \includegraphics[width=0.9\textwidth]{output/CNN_B_historico.png}
+    \includegraphics[width=1\textwidth]{output/CNN_B_historico.png}
     \caption{Histórico de \textit{Loss} e Acurácia para a CNN-B.}
     \label{fig:cnn_b_hist}
 \end{figure}
@@ -344,7 +344,7 @@ Tratando-se do modelo mais profundo da análise (4 camadas convolucionais), a CN
 
 \begin{figure}[htpb]
     \centering
-    \includegraphics[width=0.9\textwidth]{output/CNN_C_historico.png}
+    \includegraphics[width=1\textwidth]{output/CNN_C_historico.png}
     \caption{Histórico de \textit{Loss} e Acurácia para a CNN-C.}
     \label{fig:cnn_c_hist}
 \end{figure}
